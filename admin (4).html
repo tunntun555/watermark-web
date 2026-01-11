@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แอดมิน - ระบบใส่ลายน้ำ By Tunkup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Admin specific styles */
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Transition effects */
+        .hidden {
+            display: none !important;
+        }
+        
+        .page-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Watermark preview */
+        #blackPreview, #whitePreview {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        #blackPreview:hover, #whitePreview:hover {
+            transform: scale(1.02);
+            border-color: #60a5fa;
+        }
+        
+        /* Input focus styles */
+        input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        }
+        
+        /* Button hover effects */
+        button:not(:disabled):hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Gradient borders */
+        .gradient-border {
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(45deg, #ff6b6b, #4ecdc4) border-box;
+        }
+        
+        /* Loading animation */
+        .loading-dots:after {
+            content: ' .';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            40% { color: white; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+            60% { text-shadow: .25em 0 0 white, .5em 0 0 rgba(0,0,0,0); }
+            80%, 100% { text-shadow: .25em 0 0 white, .5em 0 0 white; }
+        }
+        
+        /* Success/Error animations */
+        .success-check {
+            animation: checkmark 0.5s ease-in-out;
+        }
+        
+        @keyframes checkmark {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .error-x {
+            animation: xmark 0.5s ease-in-out;
+        }
+        
+        @keyframes xmark {
+            0% { transform: rotate(0deg) scale(0); opacity: 0; }
+            50% { transform: rotate(-180deg) scale(1.2); opacity: 1; }
+            100% { transform: rotate(-360deg) scale(1); opacity: 1; }
+        }
+        
+        /* Card hover effects */
+        .admin-card {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .admin-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Watermark upload area */
+        .watermark-upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .watermark-upload-area:hover {
+            border-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+        }
+        
+        .watermark-upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.02);
+        }
+        
+        /* Range slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-track {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            background: #60a5fa;
+            border-radius: 50%;
+            margin-top: -6px;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #3b82f6;
+            transform: scale(1.2);
+        }
+        
+        /* Number input spinner */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+            height: 30px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .admin-card {
+                margin-bottom: 1rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        /* Custom gradient backgrounds */
+        .bg-gradient-admin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .bg-gradient-user {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        /* Shimmer loading effect */
+        .shimmer {
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.1) 25%, 
+                rgba(255,255,255,0.2) 50%, 
+                rgba(255,255,255,0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Notification animations */
+        .notification-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification-exit {
+            animation: slideOut 0.3s ease-in;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        /* Login form specific */
+        .login-container {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Save button pulse effect */
+        .save-pulse {
+            animation: savePulse 2s infinite;
+        }
+        
+        @keyframes savePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+        }
+        
+        /* Watermark status indicators */
+        .status-ready { color: #4CAF50; }
+        .status-missing { color: #FF9800; }
+        .status-error { color: #f44336; }
+        
+        /* Progress bar animation */
+        .progress-bar-fill {
+            transition: width 0.3s ease;
+        }
+        
+        /* Orientation indicator */
+        .orientation-portrait {
+            color: #818cf8;
+        }
+        
+        .orientation-landscape {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-pink-800 to-red-900 min-h-screen p-6">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center">
+        <div class="bg-black/40 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
+            <div class="text-center mb-6">
+                <svg class="w-16 h-16 text-yellow-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                <h1 class="text-3xl font-bold text-white mb-2" id="loginTitle">เข้าสู่ระบบแอดมิน</h1>
+                <p class="text-gray-300" id="loginSubtitle">กรุณากรอกรหัสผ่าน</p>
+            </div>
+            
+            <!-- First Time Setup -->
+            <div id="firstTimeSetup" class="space-y-4 hidden">
+                <div>
+                    <label class="text-white font-medium mb-2 block">รหัสผ่านใหม่</label>
+                    <input type="password" id="newPassword" placeholder="อย่างน้อย 4 ตัวอักษร" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-cyan-400">
+                </div>
+                
+                <div>
+                    <label class="text-white font-medium mb-2 block">ยืนยันรหัสผ่าน</label>
+                    <input type="password" id="confirmPassword" placeholder="พิมพ์รหัสผ่านอีกครั้ง" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-cyan-400">
+                </div>
+
+                <div id="setupError" class="hidden flex items-center gap-2 text-red-400 bg-red-500/20 p-3 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="setupErrorText"></span>
+                </div>
+
+                <button onclick="setupPassword()" class="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl transition">
+                    ตั้งรหัสผ่าน
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="space-y-4">
+                <div>
+                    <label class="text-white font-medium mb-2 block">รหัสผ่าน</label>
+                    <input type="password" id="loginPassword" placeholder="กรอกรหัสผ่าน" class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-cyan-400" onkeypress="if(event.key==='Enter') login()">
+                </div>
+
+                <div id="loginError" class="hidden flex items-center gap-2 text-red-400 bg-red-500/20 p-3 rounded-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    รหัสผ่านไม่ถูกต้อง
+                </div>
+
+                <button onclick="login()" class="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold rounded-xl transition">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="user.html" class="text-cyan-400 hover:text-cyan-300">← กลับหน้าผู้ใช้</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="max-w-6xl mx-auto hidden">
+        <!-- Header -->
+        <div class="bg-black/30 backdrop-blur-xl rounded-3xl p-6 mb-6 border border-white/20">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">แผงควบคุมแอดมิน</h1>
+                        <p class="text-pink-300">จัดการลายน้ำและตั้งค่าระบบ <span class="text-cyan-300">(แยกตามแนวรูป)</span></p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-xl transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    ออกจากระบบ
+                </button>
+            </div>
+        </div>
+
+        <!-- Watermark Upload -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <!-- Black Watermark -->
+            <div class="bg-black/30 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-gray-800 bg-white rounded-full p-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                    <h2 class="text-xl font-bold text-white">ลายน้ำสีดำ</h2>
+                </div>
+                <input type="file" accept="image/*" id="blackInput" class="hidden" onchange="handleWatermarkUpload('black', event)">
+                <label for="blackInput" class="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-500 rounded-2xl cursor-pointer hover:border-white transition bg-white/5">
+                    <div id="blackPreview" class="w-full h-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                    </div>
+                </label>
+                <div class="mt-4 text-center">
+                    <p class="text-gray-400 text-sm">ใช้สำหรับพื้นหลัง<span class="text-green-400 font-bold">สีอ่อน</span></p>
+                </div>
+            </div>
+
+            <!-- White Watermark -->
+            <div class="bg-black/30 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <h2 class="text-xl font-bold text-white">ลายน้ำสีขาว</h2>
+                </div>
+                <input type="file" accept="image/*" id="whiteInput" class="hidden" onchange="handleWatermarkUpload('white', event)">
+                <label for="whiteInput" class="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-500 rounded-2xl cursor-pointer hover:border-white transition bg-black/30">
+                    <div id="whitePreview" class="w-full h-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                    </div>
+                </label>
+                <div class="mt-4 text-center">
+                    <p class="text-gray-400 text-sm">ใช้สำหรับพื้นหลัง<span class="text-blue-400 font-bold">สีเข้ม</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Watermark Size Settings -->
+        <div class="bg-black/30 backdrop-blur-xl rounded-3xl p-6 border border-white/20 mb-6">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+                การตั้งค่าขนาดลายน้ำ
+            </h2>
+            
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-3">
+                    <svg class="w-5 h-5 orientation-portrait" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold text-white orientation-portrait">รูปแนวตั้ง (Portrait)</h3>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-white font-medium mb-2 block">ขนาดลายน้ำ (%)</label>
+                        <input type="range" id="watermarkSizePortrait" min="5" max="50" value="20" class="w-full" oninput="updatePortraitSizeValue(this.value)">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span class="text-gray-400">เล็ก</span>
+                            <span class="text-cyan-300 font-bold"><span id="portraitSizeValue">20</span>%</span>
+                            <span class="text-gray-400">ใหญ่</span>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2">ใช้เมื่อความสูงรูป > ความกว้าง</p>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="bg-gradient-to-b from-purple-900 to-blue-900 w-32 h-48 rounded-lg mx-auto relative">
+                            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/20 w-24 h-8 rounded" style="width: 60%"></div>
+                            <div class="absolute top-2 left-2 text-white text-xs">
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    แนวตั้ง
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-white/10">
+                <div class="flex items-center gap-2 mb-3">
+                    <svg class="w-5 h-5 orientation-landscape" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold text-white orientation-landscape">รูปแนวนอน (Landscape)</h3>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-white font-medium mb-2 block">ขนาดลายน้ำ (%)</label>
+                        <input type="range" id="watermarkSizeLandscape" min="5" max="50" value="20" class="w-full" oninput="updateLandscapeSizeValue(this.value)">
+                        <div class="flex justify-between text-sm mt-1">
+                            <span class="text-gray-400">เล็ก</span>
+                            <span class="text-yellow-300 font-bold"><span id="landscapeSizeValue">20</span>%</span>
+                            <span class="text-gray-400">ใหญ่</span>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2">ใช้เมื่อความกว้างรูป > ความสูง</p>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="bg-gradient-to-r from-yellow-900 to-orange-900 w-48 h-32 rounded-lg mx-auto relative">
+                            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/20 w-32 h-8 rounded" style="width: 40%"></div>
+                            <div class="absolute top-2 left-2 text-white text-xs">
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    แนวนอน
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <div class="bg-black/30 backdrop-blur-xl rounded-3xl p-6 border border-white/20 mb-6">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                </svg>
+                การตั้งค่าขั้นสูง
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-white font-medium mb-2 block">ระยะห่างจากขอบล่าง (cm)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="bottomMargin" step="0.1" value="0.1" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white">
+                        <span class="text-gray-400 whitespace-nowrap">เซนติเมตร</span>
+                    </div>
+                    <p class="text-gray-400 text-xs mt-2">ระยะห่างของลายน้ำจากขอบล่างของรูป</p>
+                </div>
+
+                <div>
+                    <label class="text-white font-medium mb-2 block">คุณภาพ (1-100)</label>
+                    <input type="range" id="quality" min="50" max="100" value="95" class="w-full" oninput="updateQualityValue(this.value)">
+                    <div class="flex justify-between text-sm mt-1">
+                        <span class="text-gray-400">ต่ำ</span>
+                        <span class="text-green-300 font-bold"><span id="qualityValue">95</span></span>
+                        <span class="text-gray-400">สูง</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-white font-medium mb-2 block">ค่าความสว่าง (0-255)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="brightnessThreshold" min="0" max="255" value="128" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white">
+                        <div class="flex flex-col text-xs">
+                            <span class="text-blue-400">≤128 = ขาว</span>
+                            <span class="text-green-400">>128 = ดำ</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-xs mt-2">ค่าความสว่างที่ใช้ตัดสินใจเลือกลายน้ำสีดำหรือขาว</p>
+                </div>
+
+                <div>
+                    <label class="text-white font-medium mb-2 block">DPI (ความละเอียด)</label>
+                    <select id="dpi" class="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white">
+                        <option value="72">72 DPI (เว็บ)</option>
+                        <option value="150">150 DPI (พิมพ์ทั่วไป)</option>
+                        <option value="300" selected>300 DPI (พิมพ์คุณภาพสูง)</option>
+                        <option value="600">600 DPI (พิมพ์คมชัดมาก)</option>
+                    </select>
+                    <p class="text-gray-400 text-xs mt-2">ใช้สำหรับคำนวณระยะห่างเป็นพิกเซล</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <button onclick="saveAllSettings()" id="saveBtn" class="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-xl rounded-2xl shadow-lg transition flex items-center justify-center gap-2 mb-6 save-pulse">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+            </svg>
+            บันทึกการตั้งค่าทั้งหมด
+        </button>
+
+        <!-- Status & Links -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-black/20 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
+                <h3 class="text-white font-bold mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    สถานะระบบ
+                </h3>
+                <div id="systemStatus" class="space-y-2">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-300">ลายน้ำสีดำ:</span>
+                            <span id="blackStatus" class="text-gray-400">❌ ไม่พบ</span>
+                        </div>
+                        <div id="blackDimensions" class="text-xs text-gray-500 mt-1 hidden">
+                            ขนาด: <span id="blackSize"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-300">ลายน้ำสีขาว:</span>
+                            <span id="whiteStatus" class="text-gray-400">❌ ไม่พบ</span>
+                        </div>
+                        <div id="whiteDimensions" class="text-xs text-gray-500 mt-1 hidden">
+                            ขนาด: <span id="whiteSize"></span>
+                        </div>
+                    </div>
+                </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300">การตั้งค่า:</span>
+                        <span id="settingsStatus" class="text-gray-400">โหลดอยู่...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-black/20 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
+                <h3 class="text-white font-bold mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                    ลิงก์ด่วน
+                </h3>
+                <div class="space-y-2">
+                    <a href="user.html" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        ← กลับหน้าผู้ใช้
+                    </a>
+                    <button onclick="resetSettings()" class="w-full flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-xl transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        รีเซ็ตการตั้งค่า
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="fixed bottom-4 left-0 right-0 text-center pointer-events-none">
+        <p class="text-white/60 backdrop-blur-sm bg-black/20 inline-block px-6 py-2 rounded-full border border-white/10">
+            ✨ Created by <span class="font-bold text-yellow-400">Tunkup</span> ✨
+        </p>
+    </div>
+
+    <script src="system.js"></script>
+    <script>
+        let blackWatermark = null;
+        let whiteWatermark = null;
+        let currentSettings = null;
+
+        // Check if first time
+        window.onload = async function() {
+            try {
+                const hasPassword = await hasAdminPassword();
+                if (!hasPassword) {
+                    showFirstTimeSetup();
+                }
+            } catch (error) {
+                console.error('Error checking password:', error);
+                showError('ไม่สามารถตรวจสอบรหัสผ่านได้');
+            }
+        };
+
+        function showFirstTimeSetup() {
+            document.getElementById('loginTitle').textContent = 'ตั้งรหัสผ่านแอดมิน';
+            document.getElementById('loginSubtitle').textContent = 'ครั้งแรกที่ใช้งาน กรุณาตั้งรหัสผ่าน';
+            document.getElementById('firstTimeSetup').classList.remove('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('setupError').classList.add('hidden');
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginTitle').textContent = 'เข้าสู่ระบบแอดมิน';
+            document.getElementById('loginSubtitle').textContent = 'กรุณากรอกรหัสผ่าน';
+            document.getElementById('firstTimeSetup').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        async function setupPassword() {
+            const newPass = document.getElementById('newPassword').value.trim();
+            const confirmPass = document.getElementById('confirmPassword').value.trim();
+            const errorDiv = document.getElementById('setupError');
+            const errorText = document.getElementById('setupErrorText');
+
+            // Clear previous error
+            errorDiv.classList.add('hidden');
+
+            if (newPass.length < 4) {
+                errorText.textContent = 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                errorText.textContent = 'รหัสผ่านไม่ตรงกัน';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const result = await setAdminPassword(newPass);
+                if (result.success) {
+                    alert('ตั้งรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบ');
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    showLoginForm();
+                } else {
+                    errorText.textContent = result.message;
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorText.textContent = 'เกิดข้อผิดพลาด: ' + error.message;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        async function login() {
+            const password = document.getElementById('loginPassword').value.trim();
+            const errorDiv = document.getElementById('loginError');
+            
+            // Clear previous error
+            errorDiv.classList.add('hidden');
+            
+            if (!password) {
+                document.getElementById('loginError').classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const isValid = await verifyAdminPassword(password);
+                
+                if (isValid) {
+                    // Login สำเร็จ
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('adminDashboard').classList.remove('hidden');
+                    await loadAdminData();
+                    
+                    // Clear password field
+                    document.getElementById('loginPassword').value = '';
+                } else {
+                    // Login ล้มเหลว
+                    errorDiv.classList.remove('hidden');
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('loginPassword').focus();
+                    
+                    // Hide error after 3 seconds
+                    setTimeout(() => {
+                        errorDiv.classList.add('hidden');
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+            }
+        }
+
+        function logout() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('loginPassword').value = '';
+            showLoginForm();
+        }
+
+        async function loadAdminData() {
+            try {
+                // โหลดการตั้งค่า
+                currentSettings = await loadSettings();
+                if (currentSettings) {
+                    // ตั้งค่าขนาดแนวตั้ง
+                    document.getElementById('watermarkSizePortrait').value = currentSettings.watermarkSizePortrait || currentSettings.watermarkSize || 20;
+                    document.getElementById('portraitSizeValue').textContent = currentSettings.watermarkSizePortrait || currentSettings.watermarkSize || 20;
+                    
+                    // ตั้งค่าขนาดแนวนอน
+                    document.getElementById('watermarkSizeLandscape').value = currentSettings.watermarkSizeLandscape || currentSettings.watermarkSize || 20;
+                    document.getElementById('landscapeSizeValue').textContent = currentSettings.watermarkSizeLandscape || currentSettings.watermarkSize || 20;
+                    
+                    // ตั้งค่าอื่นๆ
+                    document.getElementById('bottomMargin').value = currentSettings.bottomMargin || 0.1;
+                    document.getElementById('quality').value = currentSettings.quality || 95;
+                    document.getElementById('qualityValue').textContent = currentSettings.quality || 95;
+                    document.getElementById('brightnessThreshold').value = currentSettings.brightnessThreshold || 128;
+                    document.getElementById('dpi').value = currentSettings.dpi || 300;
+                    
+                    updateSystemStatus('settings', '✅ โหลดแล้ว');
+                } else {
+                    updateSystemStatus('settings', '⚠️ ใช้ค่าเริ่มต้น');
+                }
+
+                // โหลดลายน้ำสีดำ
+                const blackWM = await loadFromStorage('watermark-black');
+                if (blackWM) {
+                    blackWatermark = blackWM;
+                    document.getElementById('blackPreview').innerHTML = `
+                        <img src="${blackWatermark}" class="max-h-full max-w-full object-contain rounded-lg">
+                        <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            ⚫ พร้อมใช้งาน
+                        </div>
+                    `;
+                    
+                    // แสดงขนาดจริงของลายน้ำดำ
+                    const imgBlack = new Image();
+                    imgBlack.onload = function() {
+                        document.getElementById('blackSize').textContent = `${imgBlack.width}x${imgBlack.height}px`;
+                        document.getElementById('blackDimensions').classList.remove('hidden');
+                    };
+                    imgBlack.src = blackWatermark;
+                    
+                    updateSystemStatus('black', '✅ พร้อมใช้งาน');
+                } else {
+                    updateSystemStatus('black', '❌ ไม่พบไฟล์');
+                }
+
+                // โหลดลายน้ำสีขาว
+                const whiteWM = await loadFromStorage('watermark-white');
+                if (whiteWM) {
+                    whiteWatermark = whiteWM;
+                    document.getElementById('whitePreview').innerHTML = `
+                        <img src="${whiteWatermark}" class="max-h-full max-w-full object-contain rounded-lg">
+                        <div class="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            ⚪ พร้อมใช้งาน
+                        </div>
+                    `;
+                    
+                    // แสดงขนาดจริงของลายน้ำขาว
+                    const imgWhite = new Image();
+                    imgWhite.onload = function() {
+                        document.getElementById('whiteSize').textContent = `${imgWhite.width}x${imgWhite.height}px`;
+                        document.getElementById('whiteDimensions').classList.remove('hidden');
+                    };
+                    imgWhite.src = whiteWatermark;
+                    
+                    updateSystemStatus('white', '✅ พร้อมใช้งาน');
+                } else {
+                    updateSystemStatus('white', '❌ ไม่พบไฟล์');
+                }
+
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                alert('ไม่สามารถโหลดข้อมูลแอดมินได้');
+            }
+        }
+
+        function updateSystemStatus(type, message) {
+            const element = document.getElementById(type + 'Status');
+            if (element) {
+                element.textContent = message;
+                
+                // เปลี่ยนสีตามสถานะ
+                if (message.includes('✅')) {
+                    element.className = 'text-green-400';
+                } else if (message.includes('⚠️')) {
+                    element.className = 'text-yellow-400';
+                } else if (message.includes('❌')) {
+                    element.className = 'text-red-400';
+                } else {
+                    element.className = 'text-gray-400';
+                }
+            }
+        }
+
+        function handleWatermarkUpload(type, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // ตรวจสอบว่าเป็นไฟล์ภาพ
+            if (!file.type.startsWith('image/')) {
+                alert('กรุณาเลือกไฟล์ภาพเท่านั้น');
+                return;
+            }
+
+            // ตรวจสอบขนาดไฟล์ (ไม่เกิน 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('ไฟล์ภาพต้องมีขนาดไม่เกิน 2MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = e.target.result;
+                if (type === 'black') {
+                    blackWatermark = data;
+                    document.getElementById('blackPreview').innerHTML = `
+                        <img src="${data}" class="max-h-full max-w-full object-contain rounded-lg">
+                        <div class="absolute bottom-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
+                            ⚫ อัพโหลดแล้ว
+                        </div>
+                    `;
+                    updateSystemStatus('black', '✅ อัพโหลดแล้ว');
+                } else {
+                    whiteWatermark = data;
+                    document.getElementById('whitePreview').innerHTML = `
+                        <img src="${data}" class="max-h-full max-w-full object-contain rounded-lg">
+                        <div class="absolute bottom-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
+                            ⚪ อัพโหลดแล้ว
+                        </div>
+                    `;
+                    updateSystemStatus('white', '✅ อัพโหลดแล้ว');
+                }
+            };
+            reader.onerror = function() {
+                alert('ไม่สามารถอ่านไฟล์ได้');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePortraitSizeValue(val) {
+            document.getElementById('portraitSizeValue').textContent = val;
+        }
+
+        function updateLandscapeSizeValue(val) {
+            document.getElementById('landscapeSizeValue').textContent = val;
+        }
+
+        function updateQualityValue(val) {
+            document.getElementById('qualityValue').textContent = val;
+        }
+
+        async function saveAllSettings() {
+            const btn = document.getElementById('saveBtn');
+            const originalText = btn.innerHTML;
+            const originalHTML = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                กำลังบันทึก...
+            `;
+
+            try {
+                const settings = {
+                    watermarkSizePortrait: Number(document.getElementById('watermarkSizePortrait').value),
+                    watermarkSizeLandscape: Number(document.getElementById('watermarkSizeLandscape').value),
+                    bottomMargin: Number(document.getElementById('bottomMargin').value),
+                    dpi: Number(document.getElementById('dpi').value),
+                    quality: Number(document.getElementById('quality').value),
+                    brightnessThreshold: Number(document.getElementById('brightnessThreshold').value)
+                };
+
+                // ตรวจสอบค่า
+                if (settings.watermarkSizePortrait < 5 || settings.watermarkSizePortrait > 50) {
+                    throw new Error('ขนาดลายน้ำแนวตั้งต้องอยู่ระหว่าง 5-50%');
+                }
+                
+                if (settings.watermarkSizeLandscape < 5 || settings.watermarkSizeLandscape > 50) {
+                    throw new Error('ขนาดลายน้ำแนวนอนต้องอยู่ระหว่าง 5-50%');
+                }
+
+                // บันทึกการตั้งค่า
+                const settingsSaved = await saveSettings(settings);
+                
+                // บันทึกลายน้ำสีดำ
+                let blackSaved = true;
+                if (blackWatermark) {
+                    blackSaved = await saveBlackWatermark(blackWatermark);
+                }
+                
+                // บันทึกลายน้ำสีขาว
+                let whiteSaved = true;
+                if (whiteWatermark) {
+                    whiteSaved = await saveWhiteWatermark(whiteWatermark);
+                }
+
+                if (settingsSaved && blackSaved && whiteSaved) {
+                    btn.innerHTML = `
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        บันทึกสำเร็จ!
+                    `;
+                    
+                    // อัพเดทสถานะ
+                    updateSystemStatus('settings', '✅ บันทึกแล้ว');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error('ไม่สามารถบันทึกข้อมูลบางส่วนได้');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                btn.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    เกิดข้อผิดพลาด
+                `;
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }, 2000);
+                alert('ไม่สามารถบันทึกการตั้งค่าได้: ' + error.message);
+            }
+        }
+
+        async function resetSettings() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะรีเซ็ตการตั้งค่าทั้งหมดเป็นค่าเริ่มต้น?')) {
+                try {
+                    // โหลดค่าเริ่มต้น
+                    currentSettings = getDefaultSettings();
+                    
+                    // อัพเดทฟอร์ม
+                    document.getElementById('watermarkSizePortrait').value = currentSettings.watermarkSizePortrait;
+                    document.getElementById('portraitSizeValue').textContent = currentSettings.watermarkSizePortrait;
+                    
+                    document.getElementById('watermarkSizeLandscape').value = currentSettings.watermarkSizeLandscape;
+                    document.getElementById('landscapeSizeValue').textContent = currentSettings.watermarkSizeLandscape;
+                    
+                    document.getElementById('bottomMargin').value = currentSettings.bottomMargin;
+                    document.getElementById('quality').value = currentSettings.quality;
+                    document.getElementById('qualityValue').textContent = currentSettings.quality;
+                    document.getElementById('brightnessThreshold').value = currentSettings.brightnessThreshold;
+                    document.getElementById('dpi').value = currentSettings.dpi;
+                    
+                    // บันทึกค่าเริ่มต้น
+                    await saveSettings(currentSettings);
+                    alert('รีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นสำเร็จ');
+                    
+                } catch (error) {
+                    console.error('Reset error:', error);
+                    alert('ไม่สามารถรีเซ็ตการตั้งค่าได้: ' + error.message);
+                }
+            }
+        }
+
+        // เพิ่มฟังก์ชัน getDefaultSettings สำหรับหน้าแอดมิน
+        function getDefaultSettings() {
+            return {
+                watermarkSizePortrait: 20,
+                watermarkSizeLandscape: 20,
+                bottomMargin: 0.1,
+                dpi: 300,
+                quality: 95,
+                brightnessThreshold: 128
+            };
+        }
+
+        // เพิ่มฟังก์ชันกด Enter เพื่อ login
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginPasswordInput = document.getElementById('loginPassword');
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            
+            if (loginPasswordInput) {
+                loginPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+            }
+            
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        setupPassword();
+                    }
+                });
+            }
+            
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        setupPassword();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
