@@ -1,5 +1,5 @@
 // ================= FILE STORAGE SYSTEM =================
-const API_BASE = "/api";
+const API_BASE = 'http://prem-eu4.bot-hosting.net:20086';
 
 async function saveToFile(key, value) {
     try {
