@@ -1,0 +1,1 @@
+{"watermarkSizePortrait":35,"watermarkSizeLandscape":15,"bottomMargin":0.2,"dpi":300,"quality":95,"brightnessThreshold":160}
